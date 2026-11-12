@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: oregairu-fuwari
+    runtime: static
+    # 实际部署代码仍指向原仓库，原仓库与 GitHub Pages 均不受影响
+    repo: https://github.com/Liu233jh/oregairu-fuwari
+    branch: main
+    buildCommand: pnpm install --no-frozen-lockfile && pnpm build
+    staticPublishPath: ./dist/client
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_OPTIONS
+        value: "--max-old-space-size=4096"
+    routes:
+      # astro.config.mjs 里 base 写死为 /oregairu-fuwari/，用 rewrite 兼容
+      - type: rewrite
+        source: /oregairu-fuwari
+        destination: /
+      - type: rewrite
+        source: /oregairu-fuwari/
+        destination: /
+      - type: rewrite
+        source: /oregairu-fuwari/*
+        destination: /*
