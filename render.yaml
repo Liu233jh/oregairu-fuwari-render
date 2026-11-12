@@ -5,7 +5,9 @@ services:
     # 实际部署代码仍指向原仓库，原仓库与 GitHub Pages 均不受影响
     repo: https://github.com/Liu233jh/oregairu-fuwari
     branch: main
-    buildCommand: pnpm install --no-frozen-lockfile && pnpm build
+    # 构建后把整站再复制一份到 /oregairu-fuwari/ 子目录，
+    # 让 _astro、live2d/runtime、pagefind 等资源路径物理存在，不依赖 rewrite
+    buildCommand: "pnpm install --no-frozen-lockfile && pnpm build && rm -rf /tmp/site && mkdir -p /tmp/site && cp -a dist/client/. /tmp/site/ && mkdir -p dist/client/oregairu-fuwari && cp -a /tmp/site/. dist/client/oregairu-fuwari/"
     staticPublishPath: ./dist/client
     autoDeployTrigger: commit
     envVars:
@@ -14,13 +16,7 @@ services:
       - key: NODE_OPTIONS
         value: "--max-old-space-size=4096"
     routes:
-      # astro.config.mjs 里 base 写死为 /oregairu-fuwari/，用 rewrite 兼容
+      # 只保留一个无尾斜杠的兼容跳转，其余靠物理文件
       - type: rewrite
         source: /oregairu-fuwari
-        destination: /
-      - type: rewrite
-        source: /oregairu-fuwari/
-        destination: /
-      - type: rewrite
-        source: /oregairu-fuwari/*
-        destination: /*
+        destination: /oregairu-fuwari/
